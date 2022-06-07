@@ -2,9 +2,13 @@ import './App.css';
 import React, { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate, Link } from "react-router-dom";
 import styled from "styled-components";
+import { loginRoute } from "./utils/APIRoutes";
+import axios from "axios";
 
 function App() {
+  const navigate = useNavigate();
   const toastOptions = {
     position: "bottom-right",
     autoClose: 8000,
@@ -27,16 +31,25 @@ function App() {
     return true;
   };
 
-  const handleSubmit = event => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    let data = validateForm(username, password);
-    console.log(data);
-    if(data == true){
-      toast.success("Login Successful.", toastOptions);
+    let dataa = validateForm(username, password);
+    console.log(dataa);
+    const { data } = await axios.post(loginRoute, {
+      username,
+      password,
+    });
+    if (data.status === false) {
+      toast.error(data.msg, toastOptions);
     }
-    if(data == false){
-      toast.error("Login Failed.", toastOptions);
+    if (data.status === true) {
+      localStorage.setItem(
+        process.env.REACT_APP_LOCALHOST_KEY,
+        JSON.stringify(data.user)
+      );
+
+      navigate("/chat");
     }
 
     console.log('Username 👉️', username);
