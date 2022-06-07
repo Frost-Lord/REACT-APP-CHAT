@@ -1,11 +1,8 @@
 import './Register.css';
 import React, { useState, useEffect } from "react";
 import { ToastContainer, toast } from "react-toastify";
-import { useNavigate, Link } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 import styled from "styled-components";
-import { registerRoute } from "../utils/APIRoutes";
-import axios from "axios";
 
 function App() {
   const toastOptions = {
@@ -34,27 +31,13 @@ function App() {
     return true;
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = event => {
     event.preventDefault();
 
-    let data = validateForm(username, password);    
+    let data = validateForm(username, password);
+    console.log(data);
     if(data == true){
       toast.success("Login Successful.", toastOptions);
-
-      const { dataa } = await axios.post(registerRoute, {
-        username,
-        email,
-        password,
-      });
-      if (dataa.status === false) {
-        toast.error(dataa.msg, toastOptions);
-      }
-      if (dataa.status === true) {
-        localStorage.setItem(
-          process.env.REACT_APP_LOCALHOST_KEY,
-          JSON.stringify(dataa.user)
-        );
-      }
     }
     if(data == false){
       toast.error(toastOptions);

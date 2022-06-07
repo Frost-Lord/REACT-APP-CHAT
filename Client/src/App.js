@@ -1,101 +1,153 @@
+import './App.css';
 import React, { useState, useEffect } from "react";
-import io from "socket.io-client";
-import "./App.css";
-
-let socket;
-const CONNECTION_PORT = "localhost:3002/";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import styled from "styled-components";
 
 function App() {
-  // Before Login
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [room, setRoom] = useState("");
-  const [userName, setUserName] = useState("");
-
-  // After Login
-  const [message, setMessage] = useState("");
-  const [messageList, setMessageList] = useState([]);
-
-  useEffect(() => {
-    socket = io(CONNECTION_PORT);
-  }, [CONNECTION_PORT]);
-
-  useEffect(() => {
-    socket.on("receive_message", (data) => {
-      setMessageList([...messageList, data]);
-    });
-  });
-  const connectToRoom = () => {
-    setLoggedIn(true);
-    socket.emit("join_room", room);
+  const toastOptions = {
+    position: "bottom-right",
+    autoClose: 8000,
+    pauseOnHover: true,
+    draggable: true,
+    theme: "dark",
   };
 
-  const sendMessage = async () => {
-    let messageContent = {
-      room: room,
-      content: {
-        author: userName,
-        message: message,
-      },
-    };
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
-    await socket.emit("send_message", messageContent);
-    setMessageList([...messageList, messageContent.content]);
-    setMessage("");
+  const validateForm = (username, password) => {
+    if (username == "") {
+      toast.error("Email and Password is required.", toastOptions);
+      return false;
+    } else if (password == "") {
+      toast.error("Email and Password is required.", toastOptions);
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = event => {
+    event.preventDefault();
+
+    let data = validateForm(username, password);
+    console.log(data);
+    if(data == true){
+      toast.success("Login Successful.", toastOptions);
+    }
+    if(data == false){
+      toast.error("Login Failed.", toastOptions);
+    }
+
+    console.log('Username 👉️', username);
+    console.log('Passowrd 👉️', password);
+
+    setUsername('');
+    setPassword('');
   };
 
   return (
+    <>
+    <FormContainer>
     <div className="App">
-      {!loggedIn ? (
-        <div className="logIn">
-          <div className="inputs">
-            <input
-              type="text"
-              placeholder="Name..."
-              onChange={(e) => {
-                setUserName(e.target.value);
-              }}
-            />
-            <input
-              type="text"
-              placeholder="Room..."
-              onChange={(e) => {
-                setRoom(e.target.value);
-              }}
-            />
-          </div>
-          <button onClick={connectToRoom}>Enter Chat</button>
-        </div>
-      ) : (
-        <div className="chatContainer">
-          <div className="messages">
-            {messageList.map((val, key) => {
-              return (
-                <div
-                  className="messageContainer"
-                  id={val.author == userName ? "You" : "Other"}
-                >
-                  <div className="messageIndividual">
-                    {val.author}: {val.message}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="messageInputs">
-            <input
-              type="text"
-              placeholder="Message..."
-              onChange={(e) => {
-                setMessage(e.target.value);
-              }}
-            />
-            <button onClick={sendMessage}>Send</button>
-          </div>
-        </div>
-      )}
+      <header className="App-header">
+      <h1>Spark Flow</h1>
+      <form onSubmit={handleSubmit}>
+      <input
+            type="text"
+            placeholder="Username"
+            name="username"
+            onChange={event => setUsername(event.target.value)}
+            value={username}
+            min="3"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            name="password"
+            onChange={event => setPassword(event.target.value)}
+            value={password}
+            min="3"
+          />
+          <button type="submit">Log In</button>
+          <span>
+            Don't have an account ? <a href="/register">Register</a>
+          </span>
+        </form>
+      </header>
     </div>
+    
+    </FormContainer>
+    <ToastContainer />
+    </>
   );
 }
+const FormContainer = styled.div`
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  align-items: center;
+  background-color: #0b0a15;
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: center;
+    img {
+      height: 5rem;
+    }
+    h1 {
+      color: white;
+      text-transform: uppercase;
+    }
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    background-color: #00000076;
+    border-radius: 2rem;
+    padding: 5rem;
+  }
+  input {
+    background-color: transparent;
+    padding: 1rem;
+    border: 0.1rem solid #4e0eff;
+    border-radius: 0.4rem;
+    color: white;
+    width: 100%;
+    font-size: 1rem;
+    &:focus {
+      border: 0.1rem solid #997af0;
+      outline: none;
+    }
+  }
+  button {
+    background-color: #4e0eff;
+    color: white;
+    padding: 1rem 2rem;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 0.4rem;
+    font-size: 1rem;
+    text-transform: uppercase;
+    &:hover {
+      background-color: #4e0eff;
+    }
+  }
+  span {
+    color: white;
+    text-transform: uppercase;
+    a {
+      color: #4e0eff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  }
+`;
 
 export default App;

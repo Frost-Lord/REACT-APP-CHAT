@@ -1,67 +1,102 @@
-import React, { useEffect, useState, useRef } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import { io } from "socket.io-client";
+import './chat.css';
+import React, { useState, useEffect } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import styled from "styled-components";
-import { allUsersRoute, host } from "../utils/APIRoutes";
-import ChatContainer from "../components/ChatContainer";
-import Contacts from "../components/Contacts";
-import Welcome from "../components/Welcome";
 
-export default function Chat() {
-  const navigate = useNavigate();
-  const socket = useRef();
-  const [contacts, setContacts] = useState([]);
-  const [currentChat, setCurrentChat] = useState(undefined);
-  const [currentUser, setCurrentUser] = useState(undefined);
-  useEffect(async () => {
-    if (!localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
-      navigate("/");
-    } else {
-      setCurrentUser(
-        await JSON.parse(
-          localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
-        )
-      );
-    }
-  }, []);
-  useEffect(() => {
-    if (currentUser) {
-      socket.current = io(host);
-      socket.current.emit("add-user", currentUser._id);
-    }
-  }, [currentUser]);
-
-  useEffect(async () => {
-    if (currentUser) {
-      if (currentUser.isAvatarImageSet) {
-        const data = await axios.get(`${allUsersRoute}/${currentUser._id}`);
-        setContacts(data.data);
-      } else {
-        navigate("/setAvatar");
-      }
-    }
-  }, [currentUser]);
-  const handleChatChange = (chat) => {
-    setCurrentChat(chat);
+function App() {
+  const toastOptions = {
+    position: "bottom-right",
+    autoClose: 8000,
+    pauseOnHover: true,
+    draggable: true,
+    theme: "dark",
   };
+
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+
+  const validateForm = (username, password) => {
+    if (username == "") {
+      toast.error("Username is required.", toastOptions);
+      return false;
+    } else if (password == "") {
+      toast.error("Password is required.", toastOptions);
+      return false;
+    } else if (email == "") {
+      toast.error("Email is required.", toastOptions);
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = event => {
+    event.preventDefault();
+
+    let data = validateForm(username, password);
+    console.log(data);
+    if(data == true){
+      toast.success("Login Successful.", toastOptions);
+    }
+    if(data == false){
+      toast.error(toastOptions);
+    }
+
+    console.log('Username 👉️', username);
+    console.log('Passowrd 👉️', password);
+    console.log('Email 👉️', password);
+
+    setUsername('');
+    setPassword('');
+    setEmail('');
+  };
+
   return (
     <>
-      <Container>
-        <div className="container">
-          <Contacts contacts={contacts} changeChat={handleChatChange} />
-          {currentChat === undefined ? (
-            <Welcome />
-          ) : (
-            <ChatContainer currentChat={currentChat} socket={socket} />
-          )}
-        </div>
-      </Container>
+    <FormContainer>
+    <div className="App">
+      <header className="App-header">
+      <h1>Spark Flow</h1>
+      <form onSubmit={handleSubmit}>
+      <input
+            type="text"
+            placeholder="Username"
+            name="username"
+            onChange={event => setUsername(event.target.value)}
+            value={username}
+            min="3"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            name="password"
+            onChange={event => setPassword(event.target.value)}
+            value={password}
+            min="3"
+          />
+          <input
+            type="email"
+            placeholder="example@gmail.com"
+            name="email"
+            onChange={event => setEmail(event.target.value)}
+            value={email}
+            min="3"
+          />
+          <button type="submit">Log In</button>
+          <span>
+            Have an account? <a href="/">Log In</a>
+          </span>
+        </form>
+      </header>
+    </div>
+    
+    </FormContainer>
+    <ToastContainer />
     </>
   );
 }
-
-const Container = styled.div`
+const FormContainer = styled.div`
   height: 100vh;
   width: 100vw;
   display: flex;
@@ -69,15 +104,64 @@ const Container = styled.div`
   justify-content: center;
   gap: 1rem;
   align-items: center;
-  background-color: #131324;
-  .container {
-    height: 85vh;
-    width: 85vw;
+  background-color: #0b0a15;
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: center;
+    img {
+      height: 5rem;
+    }
+    h1 {
+      color: white;
+      text-transform: uppercase;
+    }
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
     background-color: #00000076;
-    display: grid;
-    grid-template-columns: 25% 75%;
-    @media screen and (min-width: 720px) and (max-width: 1080px) {
-      grid-template-columns: 35% 65%;
+    border-radius: 2rem;
+    padding: 5rem;
+  }
+  input {
+    background-color: transparent;
+    padding: 1rem;
+    border: 0.1rem solid #4e0eff;
+    border-radius: 0.4rem;
+    color: white;
+    width: 100%;
+    font-size: 1rem;
+    &:focus {
+      border: 0.1rem solid #997af0;
+      outline: none;
+    }
+  }
+  button {
+    background-color: #4e0eff;
+    color: white;
+    padding: 1rem 2rem;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 0.4rem;
+    font-size: 1rem;
+    text-transform: uppercase;
+    &:hover {
+      background-color: #4e0eff;
+    }
+  }
+  span {
+    color: white;
+    text-transform: uppercase;
+    a {
+      color: #4e0eff;
+      text-decoration: none;
+      font-weight: bold;
     }
   }
 `;
+
+export default App;
