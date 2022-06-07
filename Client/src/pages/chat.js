@@ -53,7 +53,7 @@ function App() {
     let messageContent = {
       room: room,
       content: {
-        author: userName,
+        author: currentUser ? currentUser.username : "",
         message: message,
       },
     };
@@ -62,7 +62,7 @@ function App() {
     setMessageList([...messageList, messageContent.content]);
     setMessage("");
   };
-
+  //console.log(currentUser ? currentUser.username : "");
   return (
     <div className="App">
       {!loggedIn ? (
@@ -72,7 +72,7 @@ function App() {
               type="text"
               placeholder="Name..."
               onChange={(e) => {
-                setUserName(e.target.value);
+                setUserName(currentUser ? currentUser.username : "");
               }}
             />
             <input
