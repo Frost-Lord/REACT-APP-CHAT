@@ -7,6 +7,7 @@ import './index.css';
 import Home from './App';
 import Register from './pages/Register';
 import Chat from './pages/chat';
+import SetAvatar from "./components/Avatar";
 /////////////////////////////////////////////////////////////
 import reportWebVitals from './reportWebVitals';
 
@@ -17,6 +18,7 @@ ReactDOM.render(
       <Route path="/" element={<Home />} />
       <Route path="/register" element={<Register />} />
       <Route path="/chat" element={<Chat />} />
+      <Route path="/setAvatar" element={<SetAvatar />} />
     </Routes>
   </Router>,
 

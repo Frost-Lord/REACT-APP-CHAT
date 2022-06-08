@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
 import io from "socket.io-client";
 import "./chat.css";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { allUsersRoute, host } from "../utils/APIRoutes";
+import { sendMessageRoute, recieveMessageRoute } from "../utils/APIRoutes";
 let socket;
 const CONNECTION_PORT = "localhost:5000";
 
@@ -14,6 +16,9 @@ function App() {
 
   // After Login
   const [message, setMessage] = useState("");
+    const [messages, setMessages] = useState([]);
+  const [contacts, setContacts] = useState([]);
+  const [currentChat, setCurrentChat] = useState(undefined);
   const [messageList, setMessageList] = useState([]);
   const [currentUser, setCurrentUser] = useState(undefined);
 
@@ -34,6 +39,18 @@ function App() {
       socket.current.emit("add-user", currentUser._id);
     }
   }, [currentUser]);
+
+  useEffect(async () => {
+    const data = await JSON.parse(
+      localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)
+    );
+    const response = await axios.post(recieveMessageRoute, {
+      from: data._id,
+      to: currentChat._id,
+    });
+    setMessages(response.data);
+  }, [currentChat]);
+
 
   useEffect(() => {
     socket = io(CONNECTION_PORT);
@@ -62,19 +79,11 @@ function App() {
     setMessageList([...messageList, messageContent.content]);
     setMessage("");
   };
-  //console.log(currentUser ? currentUser.username : "");
   return (
     <div className="App">
       {!loggedIn ? (
         <div className="logIn">
           <div className="inputs">
-            <input
-              type="text"
-              placeholder="Name..."
-              onChange={(e) => {
-                setUserName(currentUser ? currentUser.username : "");
-              }}
-            />
             <input
               type="text"
               placeholder="Room..."
@@ -92,7 +101,7 @@ function App() {
               return (
                 <div
                   className="messageContainer"
-                  id={val.author == userName ? "You" : "Other"}
+                  id={val.author == currentUser.username ? "You" : "Other"}
                 >
                   <div className="messageIndividual">
                     {val.author}: {val.message}
